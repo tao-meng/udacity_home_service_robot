@@ -53,7 +53,7 @@ As mentioned in the lesson **Localization and Navigation Testing**: We will be u
 
 It works for me, great~~
 
-
+![Screenshot 1](https://github.com/tao-meng/udacity_home_service_robot/blob/master/test_navigation.png)
 
 ---
 # Create 2 of ROS Nodes
@@ -69,6 +69,7 @@ Here are steps how to launch it:
 
 The purpose of this script is simulating the scenario that the robot will navigate to the first place to pick up sth and the drop off into the second place.
 
+![Screenshot 2](https://github.com/tao-meng/udacity_home_service_robot/blob/master/pick_objects.png)
 
 #### add_markers
 
@@ -88,6 +89,7 @@ This mode is basically the testing phase of our node. The behaviour expected is:
 
 It works for me, great~~
 
+![Screenshot 3](https://github.com/tao-meng/udacity_home_service_robot/blob/master/add_markers.png)
 
 ---
 # Home Service Robot
@@ -109,4 +111,4 @@ Here are steps how to launch it:
 
 It works for me, great~~
 
-
+![Screenshot 4](https://github.com/tao-meng/udacity_home_service_robot/blob/master/home_service.png)
