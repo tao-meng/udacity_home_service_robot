@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+/home/workspace/catkin_ws/src/pick_objects/../../include/home_service_robot_common.hpp
+ros/ros.h
+-
+
 /home/workspace/catkin_ws/src/pick_objects/src/pick_objects.cpp
 ros/ros.h
 -
@@ -13,6 +17,8 @@ move_base_msgs/MoveBaseAction.h
 -
 actionlib/client/simple_action_client.h
 -
+home_service_robot_common.hpp
+/home/workspace/catkin_ws/src/pick_objects/src/home_service_robot_common.hpp
 
 /opt/ros/kinetic/include/actionlib/action_definition.h
 
