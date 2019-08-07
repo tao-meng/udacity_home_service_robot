@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(add_markers)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -115,7 +115,8 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+ include
+  ../../include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -196,3 +197,7 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+## Added by Tao
+add_executable(add_markers_node src/add_markers.cpp src/transport_marker_displayer.cpp src/tracked_transport_marker_displayer.cpp)
+target_link_libraries(add_markers_node ${catkin_LIBRARIES})

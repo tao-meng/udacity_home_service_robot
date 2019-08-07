@@ -7,6 +7,8 @@
     <param name="/plemma/hsr/dropoff_pose_x"       value="-10.0" />
     <param name="/plemma/hsr/dropoff_pose_y"       value="-2.0" />
     <param name="/plemma/hsr/dropoff_pose_yaw_deg" value="30" />
-    <node pkg="pick_objects"       type="pick_objects_node"
-          name="pick_objects" output="screen" />
+    <!-- MODE: display the markers independently of robot's position -->
+    <param name="/plemma/hsr/add_markers/track_robot" value="false" />
+    <node pkg="add_markers"       type="add_markers_node"
+          name="add_markers" output="screen" />
 </launch>

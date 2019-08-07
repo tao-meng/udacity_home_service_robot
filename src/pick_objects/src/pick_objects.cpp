@@ -1,86 +1,91 @@
 #include <ros/ros.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include "home_service_robot_common.hpp"
 
-// Define a client for to send goal requests to the move_base server through a SimpleActionClient
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
+void FillInGoal(SimplifiedPose const & pose, move_base_msgs::MoveBaseGoal & goal)
+{
+    goal.target_pose.header.frame_id = "map";
+    goal.target_pose.header.stamp = ros::Time::now();
+    goal.target_pose.pose.position.x = pose.x;
+    goal.target_pose.pose.position.y = pose.y;
+    goal.target_pose.pose.position.z = 0.0;
 
-int main(int argc, char** argv){
-  // Initialize the simple_navigation_goals node
-  ros::init(argc, argv, "pick_objects");
+    double yaw_in_rad = 2.0 * pose.yaw_in_deg * constants::kPi / 180.0;
 
-  //tell the action client that we want to spin a thread by default
-  MoveBaseClient ac("move_base", true);
+    goal.target_pose.pose.orientation.x = 0.0;
+    goal.target_pose.pose.orientation.y = 0.0;
+    goal.target_pose.pose.orientation.z = std::sin(0.5 * yaw_in_rad);
+    goal.target_pose.pose.orientation.w = std::cos(0.5 * yaw_in_rad);
+}
 
-  // Wait 5 sec for move_base action server to come up
-  while(!ac.waitForServer(ros::Duration(5.0))){
-    ROS_INFO("Waiting for the move_base action server to come up");
-  }
+int main(int argc, char** argv)
+{
+    // Initialize a ROS node
+    ros::init(argc, argv, "pick_objects");
 
-  move_base_msgs::MoveBaseGoal goal;
+    // Create action client to communicate with action "move_base" and instruct
+    // it to start a thread to call ros::spin() (instead of us having to call it
+    // manually)
+    MoveBaseClient action_client("move_base", true);
 
-  // set up the frame parameters
-  goal.target_pose.header.frame_id = "map";
-  goal.target_pose.header.stamp = ros::Time::now();
+    // Wait for the action server to come up
+    while(!action_client.waitForServer(ros::Duration(5.0)))
+    {
+        ROS_INFO("Waiting for the move_base action server to come up");
+    }
 
-  // Define a position and orientation for the robot to reach
-  goal.target_pose.pose.position.x = -10.0;
-  goal.target_pose.pose.position.y = -2.0;
-  goal.target_pose.pose.orientation.w = 1.0;
+    // Check parameter configuration
+    ros::NodeHandle nh;
+    SimplifiedPose pickup;
+    SimplifiedPose dropoff;
+    if (!ReadPickUpAndDropOffZones(pickup, dropoff))
+        return 0;
 
-   // Send the goal position and orientation for the robot to reach
-  ROS_INFO("Sending pick-up position as first goal");
-  ac.sendGoal(goal);
+    move_base_msgs::MoveBaseGoal pickup_goal;
 
-  // Wait an infinite time for the results
-  ac.waitForResult();
-  
-  // whether picked up or not
-  bool pickup = false;
+    FillInGoal(pickup, pickup_goal);
 
-  // Check if the robot reached its goal
-  if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-  {
-    ROS_INFO("The robot reached the pick-up point");
-	pickup = true;
-  }
-  else
-  {
-    ROS_INFO("The robot failed to reach the pick-up point. All goals cancelled");
-	ac.cancelAllGoals();
-  }
-  
-  if(pickup)
-	{
-		// Wait 5 sec for simulating the pick up action
-		ros::Duration(5.0).sleep();
-		ROS_INFO("Virtual object picked up");
+    ROS_INFO("Sending pick-up position as first goal");
+    action_client.sendGoal(pickup_goal);
 
-		move_base_msgs::MoveBaseGoal dropoff_goal;
-		
-		// set up the frame parameters
-	    dropoff_goal.target_pose.header.frame_id = "map";
-	    dropoff_goal.target_pose.header.stamp = ros::Time::now();
+    action_client.waitForResult();
 
-	    // Define a position and orientation for the robot to reach
-	    dropoff_goal.target_pose.pose.position.x = -5.0;
-		dropoff_goal.target_pose.pose.position.y = -1.0;
-	    dropoff_goal.target_pose.pose.orientation.w = 1.0;
+    bool pickup_reached = false;
 
-		ROS_INFO("Sending drop-off position as second goal");
-		ac.sendGoal(dropoff_goal);
+    if(action_client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+    {
+        ROS_INFO("The robot reached the pick-up point");
+        pickup_reached = true;
+    }
+    else
+    {
+        ROS_INFO("The robot failed to reach the pick-up point. All goals cancelled");
+        action_client.cancelAllGoals();
+    }
 
-		ac.waitForResult();
+    if (pickup_reached)
+    {
+        ros::Duration(5.0).sleep();
+        ROS_INFO("Virtual object picked up");
 
-		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-		{
-			ROS_INFO("The robot reached the drop-off point");
-		}
-		else
-		{
-			ROS_INFO("The robot failed to reach the drop-off point");
-		}
-	}
+        move_base_msgs::MoveBaseGoal dropoff_goal;
+        FillInGoal(dropoff, dropoff_goal);
 
-  return 0;
+        ROS_INFO("Sending drop-off position as second goal");
+        action_client.sendGoal(dropoff_goal);
+
+        action_client.waitForResult();
+
+        if(action_client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {
+            ROS_INFO("The robot reached the drop-off point");
+        }
+        else
+        {
+            ROS_INFO("The robot failed to reach the drop-off point");
+        }
+    }
+    return 0;
 }
