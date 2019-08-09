@@ -1,5 +1,6 @@
 # udacity_home_service_robot
-Home Service Robot project at udacity
+
+This repository is **Depreciated**, please refer to: https://github.com/tao-meng/udacity_home_service_robot_v2
 
 ---
 # Fix the environment problem
